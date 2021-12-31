@@ -9,7 +9,7 @@ int main()
 	GUI gui(1775, 940);
 	bool needToDraw = true;
 	bool pause = false;
-	for (int cnt = 0; !gui.isAppClosed(); ++cnt)
+	for (int cnt = 0, era = 0; !gui.isAppClosed(); ++cnt)
 	{
 		if (needToDraw) gui.drawField(map.getPresentation());
 		std::vector<GUI::EventType> events = gui.getEvents();
@@ -24,8 +24,9 @@ int main()
 		if (map.needToEvolve())
 		{
 			map.evolve();
-			std::cout << cnt << std::endl;
+			std::cout << era << ": " << cnt << std::endl;
 			cnt = 0;
+			++era;
 		}
 	}
 }

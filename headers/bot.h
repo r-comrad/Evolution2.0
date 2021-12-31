@@ -42,11 +42,21 @@ public:
 	sint_8 getHealph() const;
 
 private:
-	uint_8 mProgramPtr;
-	std::vector<uint_8> mProgram;
+	sint_8 mProgramPtr;
+	std::vector<sint_8> mProgram;
 	sint_8 mHealph;
 
 	Direction mDirection;
+	sint_8 generateComand();
+	enum Comands
+	{
+		BOT_GO = 11,
+		BOT_EAT = 12,
+		BOT_CONVERT = 13,
+		BOT_LOOK = 14, 
+		BOT_TURN_RIGHT = 15,
+		BOT_TURN_LEFT = 16,
+	};
 	//void changeHealph(sint_8 aValue);
 };
 

@@ -26,6 +26,7 @@ public:
 	void makeTurn();
 	bool needToEvolve();
 	void evolve();
+	void check();
 private:
 	std::vector<std::vector<Object*>> mField;
 	std::queue<Pair<sint_16>> mBotsCoord;
@@ -39,9 +40,13 @@ private:
 	sint_16 mFoodtCounter;
 	sint_16 mPoisonCounter;
 	sint_16 mWallCounter;
+	sint_16 mPlantBalanceChange;
+	
+	void destroyPlant(Object::ObjectType aType = Object::ObjectType::FOOD);
 
 	void regenerateField();
 	void getBotsCoordinates();
+	std::queue<Bot*> mOldBots;
 };
 
 #endif //MAP_H

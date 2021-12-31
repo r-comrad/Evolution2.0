@@ -3,6 +3,9 @@
 
 #include "domain.h"
 
+#define DIRECTION_MIN_LIMIT 0
+#define DIRECTION_MAX_LIMIT 5
+
 struct Direction
 {
 public:

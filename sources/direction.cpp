@@ -7,6 +7,10 @@ Direction::Direction(sint_8 aDirValue) :
 Direction& 
 Direction::operator++() {
 	mValue++;
+	if (mValue > DIRECTION_MAX_LIMIT)
+	{
+		mValue -= DIRECTION_MAX_LIMIT + 1;
+	}
 	return *this;
 }
 
@@ -20,6 +24,10 @@ Direction::operator++(int) {
 Direction& 
 Direction::operator--() {
 	mValue--;
+	if (mValue < DIRECTION_MIN_LIMIT)
+	{
+		mValue += DIRECTION_MAX_LIMIT + 1;
+	}
 	return *this;
 }
 

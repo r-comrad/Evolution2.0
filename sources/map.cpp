@@ -1,10 +1,65 @@
 #include "map.h"
 
+void Map::check()
+{
+	//int ss1 = 0;
+	//for (sint_16 i = 0; i < mField.size(); ++i)
+	//{
+	//	for (sint_16 j = 0; j < mField[0].size(); ++j)
+	//	{
+	//		if (mField[i][j]->getType() == Object::ObjectType::FOOD)
+	//		{
+	//			ss1++;
+	//		}
+	//	}
+	//}
+
+	//if (ss1 != FOOD_START_COUNT || mFoodtCounter != FOOD_START_COUNT)
+	//{
+	//	std::cout << "error count\n";
+	//}
+
+	//ss1 = 0;
+	//for (sint_16 i = 0; i < mField.size(); ++i)
+	//{
+	//	for (sint_16 j = 0; j < mField[0].size(); ++j)
+	//	{
+	//		if (mField[i][j]->getType() == Object::ObjectType::POISON)
+	//		{
+	//			ss1++;
+	//		}
+	//	}
+	//}
+
+	//if (ss1 != POISON_START_COUNT || mPoisonCounter != POISON_START_COUNT)
+	//{
+	//	std::cout << "error count\n";
+	//}
+
+//	ss1 = 0;
+//	for (sint_16 i = 0; i < mField.size(); ++i)
+//	{
+//		for (sint_16 j = 0; j < mField[0].size(); ++j)
+//		{
+//			if (mField[i][j]->getType() == Object::ObjectType::POISON)
+//			{
+//				ss1++;
+//			}
+//		}
+//	}
+//
+//	if (ss1 != WALL_START_COUNT + mField.size() * 2+ mField[0].size() * 2 - 4)
+//	{
+//		std::cout << "error count\n";
+//	}
+}
+
 Map::Map(sint_16 aN, sint_16 aM) :
 	mField(aN + 2, std::vector<Object*>(aM + 2, NULL)),
-	mFoodtCounter(0),
-	mPoisonCounter(0),
-	mWallCounter(0)
+	mFoodtCounter		(0),
+	mPoisonCounter		(0),
+	mWallCounter		(0),
+	mPlantBalanceChange	(0)
 {
 	for (auto& i : mField)
 	{
@@ -111,6 +166,8 @@ Map::createObjects
 void
 Map::makeTurn()
 {
+	check();
+
 	uint_16 count = mBotsCoord.size();
 	for (uint_16 i = 0; i < count; ++i)
 	{
@@ -118,11 +175,11 @@ Map::makeTurn()
 		Pair<sint_16> cur = mBotsCoord.front();
 		mBotsCoord.pop();
 
+		Bot* botPtr = static_cast<Bot*>(mField[cur.x][cur.y]);
 		Object::ObjectType argument = Object::ObjectType::VOID;
 		for (uint_8 j = 0; j < 8; ++j)
 		{
 			//std::cout << "     j : " << int(j) << "\n";
-			Bot* botPtr = static_cast<Bot*>(mField[cur.x][cur.y]);
 			Bot::Action action = botPtr->makeAction(argument);
 
 			const Direction& dir = botPtr->getDirection();
@@ -139,7 +196,7 @@ Map::makeTurn()
 				if (type == Object::ObjectType::FOOD)
 				{
 					botPtr->feed(0.5);
-					--mFoodtCounter;
+					destroyPlant();
 				}
 				else if (type == Object::ObjectType::POISON)
 				{
@@ -159,7 +216,7 @@ Map::makeTurn()
 				if (type == Object::ObjectType::FOOD)
 				{
 					botPtr->feed(1);
-					--mFoodtCounter;
+					destroyPlant();
 					setNewObject(Object::ObjectType::VOID, next);
 				}
 				else if (type == Object::ObjectType::POISON)
@@ -173,8 +230,8 @@ Map::makeTurn()
 			case Bot::Action::CONVERT:
 				if (type == Object::ObjectType::POISON)
 				{
-					--mPoisonCounter;
-					++mFoodtCounter;
+					//TODO: error
+					++mPlantBalanceChange;
 					setNewObject(Object::ObjectType::FOOD, next);
 				}
 				break;
@@ -183,9 +240,12 @@ Map::makeTurn()
 				break;
 			}
 		}
-		if (!static_cast<Bot*>(mField[cur.x][cur.y])->aging())
+		if (!botPtr->aging())
 		{
-			setNewObject(Object::ObjectType::VOID, cur);
+			mOldBots.push(botPtr);
+			mField[cur.x][cur.y] = new Object(Object::ObjectType::VOID);
+			while (mOldBots.size() > 8) mOldBots.pop();
+			//setNewObject(Object::ObjectType::VOID, cur);
 		}
 		else
 		{
@@ -193,11 +253,31 @@ Map::makeTurn()
 		}
 	}
 
-	createObjects(FOOD_START_COUNT - mFoodtCounter, Object::ObjectType::FOOD);
-	createObjects(POISON_START_COUNT - mPoisonCounter, Object::ObjectType::POISON);
+	for (sint_8 i = 0; i < 1; ++i)
+	{
+		if (mFoodtCounter < FOOD_START_COUNT)
+		{
+			createObjects(1, Object::ObjectType::FOOD);
+			++mFoodtCounter;
+		}
+		else break;
+	}
+	for (sint_8 i = 0; i < 1; ++i)
+	{
+		if (mPoisonCounter < POISON_START_COUNT)
+		{
+			createObjects(1, Object::ObjectType::POISON);
+			++mPoisonCounter;
+		}
+		else break;
+	}
 
-	mFoodtCounter = FOOD_START_COUNT;
-	mPoisonCounter = POISON_START_COUNT;
+	//createObjects(POISON_START_COUNT - mPoisonCounter, Object::ObjectType::POISON);
+
+	//mFoodtCounter = FOOD_START_COUNT;
+	//mPoisonCounter = POISON_START_COUNT;
+
+	check();
 }
 
 bool 
@@ -220,9 +300,21 @@ Map::evolve()
 		mField[cur.x][cur.y] = new Object(Object::ObjectType::VOID);
 	}
 
+	while (mOldBots.size() >  BOT_DOWN_LIMIT - bots.size())
+	{
+		mOldBots.pop();
+	}
+	while (!mOldBots.empty())
+	{
+		bots.push_back(mOldBots.front());
+		mOldBots.pop();
+	}
+
+	//TODO: delete
 	while (bots.size() < BOT_DOWN_LIMIT)
 	{
 		bots.push_back(new Bot());
+		std::cout << "```` error adding bots\n";
 	}
 
 	regenerateField();
@@ -294,6 +386,24 @@ Map::getBotsCoordinates()
 				mBotsCoord.push({ i, j });
 			}
 		}
+	}
+}
+
+void 
+Map::destroyPlant(Object::ObjectType aType)
+{
+	if (aType == Object::ObjectType::FOOD)
+	{
+		if (mPlantBalanceChange > 0)
+		{
+			--mPlantBalanceChange;
+			--mPoisonCounter;
+		}
+		else --mFoodtCounter;
+	}
+	else if (aType == Object::ObjectType::POISON)
+	{
+		--mPoisonCounter;
 	}
 }
 

@@ -7,7 +7,7 @@ Bot::Bot() :
 	mDirection	(rand() % 6),
 	mHealph		(START_HEALPH)
 {
-	for (auto& i : mProgram) i = rand() % COMMAND_LIMIT + 1;
+	for (auto& i : mProgram) i = generateComand();
 }
 
 Bot::Bot(const Bot& aOther) :
@@ -33,23 +33,23 @@ Bot::makeAction(Object::ObjectType)
 	Bot::Action result = Bot::Action::NUN;
 	switch (mProgram[mProgramPtr])
 	{
-	case 1 :
+	case BOT_GO:
 		result = Bot::Action::GO;
 		break;
-	case 2:
+	case BOT_EAT:
 		result = Bot::Action::EAT;
 		break;
-	case 3:
+	case BOT_CONVERT:
 		result = Bot::Action::CONVERT;
 		break;
-	case 4:
+	case BOT_LOOK:
 		result = Bot::Action::LOOK;
 		break;
-	case 5:
+	case BOT_TURN_RIGHT:
 		++mDirection;
 		result = Bot::Action::VOID;
 		break;
-	case 6:
+	case BOT_TURN_LEFT:
 		--mDirection;
 		result = Bot::Action::VOID;
 		break;
@@ -58,12 +58,58 @@ Bot::makeAction(Object::ObjectType)
 	//	result = Bot::Action::VOID;
 	//	break;
 	default:
-		std::cout << "bot program error\n";
+		if (mProgram[mProgramPtr] != 0)
+		{
+			mProgramPtr += mProgram[mProgramPtr];
+			result = Bot::Action::VOID;
+		}
+		else
+		{
+			std::cout << "bot program error\n";
+		}
 		break;
 	}
 	++mProgramPtr;
-	if (mProgramPtr >= mProgram.size()) mProgramPtr = 0;
+	if (mProgramPtr >= sint_8(mProgram.size())) mProgramPtr -= mProgram.size();
+	if (mProgramPtr < 0)
+	{
+		mProgramPtr += mProgram.size();
+	}
 	return result;
+}
+
+sint_8
+Bot::generateComand()
+{
+	int command = rand() % COMMAND_LIMIT;
+	switch (command)
+	{
+	case 0 :
+		command = Comands::BOT_GO;
+		break;
+	case 1:
+		command = Comands::BOT_EAT;
+		break;
+	case 2:
+		command = Comands::BOT_CONVERT;
+		break;
+	case 3:
+		command = Comands::BOT_LOOK;
+		break;
+	case 4:
+		if (rand() % 2) command = Comands::BOT_TURN_LEFT;
+		else command = Comands::BOT_TURN_RIGHT;
+		break;
+	case 5:
+		if (rand() % 2) command = rand() % 10 + 1;
+		else command = -(rand() % 10 + 1);
+		break;
+	default:
+		std::cout << "error command generating\n";
+		command = 0;
+		break;
+	}
+	return command;
 }
 
 void 
@@ -100,7 +146,7 @@ Bot::evolve(uint_8 aValue)
 		uint_8 new_value = mProgram[i];
 		do
 		{
-			new_value = rand() % COMMAND_LIMIT + 1;
+			new_value = generateComand();
 		} while (new_value == mProgram[i]);
 
 		mProgram[i] = new_value;
