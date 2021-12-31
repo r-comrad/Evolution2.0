@@ -32,11 +32,13 @@ public:
 	Direction& operator--();
 	Direction operator--(int);
 
-	sint_8 getX() const;
-	sint_8 getY() const;
+	Pair<sint_16> shiftPair(const Pair<sint_16>& aPair) const;
 
 private:
 	sint_8 mValue;
+
+	//sint_8 getX() const;
+	//sint_8 getY() const;
 };
 
 #endif //DIRECTION_H

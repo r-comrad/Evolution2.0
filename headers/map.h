@@ -4,6 +4,8 @@
 #include <vector>
 #include <set>
 #include <queue>
+#include <math.h>
+#include <algorithm>
 
 #include "domain.h"
 #include "object.h"
@@ -13,9 +15,11 @@
 #define POISON_START_COUNT (64 * 3)
 #define FOOD_START_COUNT (64 * 2)
 #define WALL_START_COUNT (64 * 2)
+//#define GROW_SPPED
 
 #define BOT_ACTION_LIMIT 8
 #define BOT_DOWN_LIMIT 8
+//#define BOT_DOWN_LIMIT -1
 #define BOT_MULTIPLY_COUNT 7
 
 class Map
@@ -30,6 +34,8 @@ public:
 private:
 	std::vector<std::vector<Object*>> mField;
 	std::queue<Pair<sint_16>> mBotsCoord;
+	//std::map <Pair<sint_16>> mFoodCoord;
+	//std::vector <Pair<sint_16>> mPoisonCoord;
 
 	void setNewObject(Object::ObjectType aType, Pair<sint_16> aCoord);
 	void setExictingObject(Object* aObjectPtr, Pair<sint_16> aCoord);
@@ -41,12 +47,18 @@ private:
 	sint_16 mPoisonCounter;
 	sint_16 mWallCounter;
 	sint_16 mPlantBalanceChange;
+
+	std::queue<Pair<sint_16>> mFoodSuitableCells;
+	std::queue<Pair<sint_16>> mPoisonSuitableCells;
 	
 	void destroyPlant(Object::ObjectType aType = Object::ObjectType::FOOD);
 
 	void regenerateField();
-	void getBotsCoordinates();
+	std::vector <Pair<sint_16>> getObjectsCoordinates(Object::ObjectType aType);
 	std::queue<Bot*> mOldBots;
+
+	void createNewPlant(Object::ObjectType aType, std::queue<Pair<sint_16>>& aSuitableCells, sint_16 aCount);
+	void getSuitableCells(Object::ObjectType aType, std::queue<Pair<sint_16>>& aContainer);
 };
 
 #endif //MAP_H

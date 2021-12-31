@@ -13,8 +13,8 @@
 #define COMMAND_LIMIT 6
 
 #define START_HEALPH	90
-#define FOOD_VALUE		30
-#define POISON_VALUE	50
+#define FOOD_VALUE		10
+#define POISON_VALUE	20
 
 class Bot : public Object
 {

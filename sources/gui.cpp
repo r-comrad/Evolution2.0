@@ -58,15 +58,29 @@ GUI::drawField(std::vector<std::vector<Object*>> aField)
 
             if (aField[i][j]->getType() == Object::ObjectType::BOT)
             {
+                std::string botHealph = std::to_string(static_cast<Bot*>(aField[i][j])->getHealph());
                 mText.setPosition(
-                    (TEXT_DX + HEXAGON_DX +
+                    ((botHealph.size() == 1 ? TEXT_SINGLE_DX : 0) + TEXT_DX + HEXAGON_DX +
                         (j % 2 ? (HEXAGON_SIZE * 3) : (HEXAGON_SIZE * 2.))) +
                     i * HEXAGON_SIZE * 2.,
                     TEXT_DY + HEXAGON_DY + j * (HEXAGON_SIZE * 1.6f));
                 //std::string ss = (std::to_string(static_cast<Bot*>(aField[i][j])->getHealph()));
-                mText.setString(std::to_string(static_cast<Bot*>(aField[i][j])->getHealph()));
+                mText.setString(botHealph);
                 mWindow.draw(mText);
             }
+            //else 
+            //{
+            //    mText.setScale(sf::Vector2f(0.5, 0.5));
+            //    mText.setPosition(
+            //        (TEXT_DX + HEXAGON_DX +
+            //            (j % 2 ? (HEXAGON_SIZE * 3) : (HEXAGON_SIZE * 2.))) +
+            //        i * HEXAGON_SIZE * 2.,
+            //        TEXT_DY + HEXAGON_DY + j * (HEXAGON_SIZE * 1.6f));
+            //    //std::string ss = (std::to_string(static_cast<Bot*>(aField[i][j])->getHealph()));
+            //    mText.setString(std::to_string(i) + " " + std::to_string(j));
+            //    mWindow.draw(mText);
+            //    mText.setScale(sf::Vector2f(1, 1));
+            //}
         }
     }
     mWindow.display();
@@ -97,6 +111,18 @@ GUI::getEvents()
             else if (event.key.code == sf::Keyboard::Key::Space)
             {
                 result.push_back(GUI::EventType::SWITCH_PAUSE);
+            }
+            else if (event.key.code == sf::Keyboard::Key::X)
+            {
+                result.push_back(GUI::EventType::INCREASE_PAUSE);
+            }
+            else if (event.key.code == sf::Keyboard::Key::Z)
+            {
+                result.push_back(GUI::EventType::DECREASE_PAUSE);
+            }
+            else if (event.key.code == sf::Keyboard::Key::LShift)
+            {
+                result.push_back(GUI::EventType::ZERO_PAUSE);
             }
         }
     }

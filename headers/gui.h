@@ -15,6 +15,7 @@
 #define HEXAGON_DY 50.f
 
 #define TEXT_DX -18.f
+#define TEXT_SINGLE_DX 10.f
 #define TEXT_DY -20.f
 
 #define HEXAGON_OTLINE_THICKNESS 5.f
@@ -27,7 +28,10 @@ public:
 	{
 		NUN = 0,
 		SWITCH_DRAW_MODE = 1,
-		SWITCH_PAUSE = 2
+		SWITCH_PAUSE = 2,
+		INCREASE_PAUSE = 3,
+		DECREASE_PAUSE = 4,
+		ZERO_PAUSE
 	};
 
 	GUI(sint_16 aN, sint_16 aM);

@@ -81,9 +81,22 @@ Map::Map(sint_16 aN, sint_16 aM) :
 		setNewObject(Object::ObjectType::WALL, Pair<sint_16>(mField.size() - 1, i));
 	}
 
+	//setNewObject(Object::ObjectType::FOOD, Pair<sint_16>(10, 10));
+	//setNewObject(Object::ObjectType::FOOD, Pair<sint_16>(20, 10));
+	//setNewObject(Object::ObjectType::FOOD, Pair<sint_16>(30, 10));
+
+	//setNewObject(Object::ObjectType::POISON, Pair<sint_16>(10, 17));
+	//setNewObject(Object::ObjectType::POISON, Pair<sint_16>(20, 17));
+	//setNewObject(Object::ObjectType::POISON, Pair<sint_16>(30, 17));
+	//return;
+
 	regenerateField();
 	createObjects(BOTS_START_COUNT, Object::ObjectType::BOT);
-	getBotsCoordinates();
+	std::vector <Pair<sint_16>> temp = getObjectsCoordinates(Object::ObjectType::BOT);
+	for (auto& i : temp) mBotsCoord.push(i);
+
+	//mFoodCoord = getObjectsCoordinates(Object::ObjectType::FOOD);
+	//mPoisonCoord = getObjectsCoordinates(Object::ObjectType::POISON);
 }
 
 const std::vector<std::vector<Object*>>&
@@ -183,7 +196,7 @@ Map::makeTurn()
 			Bot::Action action = botPtr->makeAction(argument);
 
 			const Direction& dir = botPtr->getDirection();
-			Pair<sint_16> next(cur.x + dir.getX(), cur.y + dir.getY());
+			Pair<sint_16> next = dir.shiftPair(cur);
 			Object::ObjectType type = mField[next.x][next.y]->getType();
 			switch (action)
 			{
@@ -236,7 +249,7 @@ Map::makeTurn()
 				}
 				break;
 			case Bot::Action::LOOK:
-				argument = mField[cur.x + dir.getX()][cur.y + dir.getY()]->getType();
+				argument = mField[next.x][next.y]->getType();
 				break;
 			}
 		}
@@ -253,37 +266,167 @@ Map::makeTurn()
 		}
 	}
 
-	for (sint_8 i = 0; i < 1; ++i)
+	if (mFoodtCounter < FOOD_START_COUNT)
 	{
-		if (mFoodtCounter < FOOD_START_COUNT)
-		{
-			createObjects(1, Object::ObjectType::FOOD);
-			++mFoodtCounter;
-		}
-		else break;
+		++mFoodtCounter;
+		createNewPlant(Object::ObjectType::FOOD, mFoodSuitableCells, 1);
 	}
-	for (sint_8 i = 0; i < 1; ++i)
+	if (mPoisonCounter < POISON_START_COUNT)
 	{
-		if (mPoisonCounter < POISON_START_COUNT)
-		{
-			createObjects(1, Object::ObjectType::POISON);
-			++mPoisonCounter;
-		}
-		else break;
+		++mPoisonCounter;
+		createNewPlant(Object::ObjectType::POISON, mPoisonSuitableCells, 1);
 	}
+
+
+	//for (sint_8 i = 0; i < 1; ++i)
+	//{
+	//	//if (mFoodtCounter < FOOD_START_COUNT)
+	//	//{
+	//	//	createObjects(1, Object::ObjectType::FOOD);
+	//	//	++mFoodtCounter;
+	//	//}
+	//	//else break;
+	//}
+
 
 	//createObjects(POISON_START_COUNT - mPoisonCounter, Object::ObjectType::POISON);
 
 	//mFoodtCounter = FOOD_START_COUNT;
 	//mPoisonCounter = POISON_START_COUNT;
 
-	check();
+	//check();
 }
+
+void 
+Map::getSuitableCells
+(
+	Object::ObjectType aType,
+	std::queue<Pair<sint_16>>& aContainer
+)
+{
+	std::set<Pair<sint_16>> setOfSuitableCells;
+	Direction dir(0);
+	for (sint_16 i = 1; i < mField.size() - 1; ++i)
+	{
+		for (sint_16 j = 1; j < mField[0].size() - 1; ++j)
+		{
+			Pair<sint_16> cur(i, j);
+			if (mField[cur.x][cur.y]->getType() == aType)
+			{
+				for (uint_8 k = 0; k < 6; ++k)
+				{
+					Pair<sint_16> next = dir.shiftPair(cur);
+					if (mField[next.x][next.y]->getType() == Object::ObjectType::VOID)
+					{
+						setOfSuitableCells.insert(next);
+					}
+					++dir;
+				}
+			}
+		}
+	}
+
+	std::vector<std::vector<Pair<sint_16>>> randomOrder(10);
+	for (auto& i : setOfSuitableCells)
+	{
+		int num = rand() % randomOrder.size();
+		randomOrder[num].push_back(i);
+	}
+	for (auto& i : randomOrder)
+	{
+		for (auto& j : i)
+		{
+			aContainer.push(j);
+		}
+	}
+}
+
+void
+Map::createNewPlant
+(
+	Object::ObjectType aType, 
+	std::queue<Pair<sint_16>>& aSuitableCells, 
+	sint_16 aCount
+)
+{
+	while (aCount)
+	{
+		if (aSuitableCells.empty())
+		{
+			getSuitableCells(aType, aSuitableCells);
+		}
+
+		Pair<sint_16> cur = aSuitableCells.front();
+		aSuitableCells.pop();
+		if (mField[cur.x][cur.y]->getType() != Object::ObjectType::VOID) continue;
+		
+		Direction dir(0);
+		for (uint_8 k = 0; k < 6; ++k)
+		{
+			Pair<sint_16> neighbour = dir.shiftPair(cur);
+			if (mField[neighbour.x][neighbour.y]->getType() == aType)
+			{
+				setNewObject(aType, cur);
+				--aCount;
+				break;
+			}
+			++dir;
+		}
+	}
+}
+
+//void
+//Map::createNewPlant(Object::ObjectType aType, sint_16 aCount)
+//{
+//	if (aCount == 0) return;
+//
+//	//sint_16 x = rand() % (mField.size() - 2) + 1;
+//	//sint_16 y = rand() % (mField[0].size() - 2) + 1;
+//
+//	std::set<Pair<sint_16>> setOfSuitableCells;
+//	Direction dir(0);
+//	for (sint_16 i = 1; i < mField.size() - 1; ++i)
+//	{
+//		for (sint_16 j = 1; j < mField[0].size() - 1; ++j)
+//		{
+//			Pair<sint_16> cur(i, j);
+//			if (mField[cur.x][cur.y]->getType() == aType)
+//			{
+//				for (uint_8 k = 0; k < 6; ++k)
+//				{
+//					Pair<sint_16> next = dir.shiftPair(cur);
+//					if (mField[next.x][next.y]->getType() == Object::ObjectType::VOID)
+//					{
+//						setOfSuitableCells.insert(next);
+//					}
+//					++dir;
+//				}
+//			}
+//		}
+//	}
+//
+//	std::vector<Pair<sint_16>> arrayOfSuitableCells;
+//	for (auto& i : setOfSuitableCells) arrayOfSuitableCells.push_back(i);
+//
+//	for (sint_16 i = 0; i < std::min(aCount, sint_16(arrayOfSuitableCells.size())); ++i)
+//	{
+//		int num = rand() % arrayOfSuitableCells.size();
+//		if (arrayOfSuitableCells[num].x != -1)
+//		{
+//			setNewObject(aType, arrayOfSuitableCells[num]);
+//			arrayOfSuitableCells[num].x = -1;
+//			--aCount;
+//			--i;
+//		}
+//	}
+//
+//	createObjects(aCount, aType);
+//}
 
 bool 
 Map::needToEvolve()
 {
-	return mBotsCoord.size() <= BOT_DOWN_LIMIT;
+	return sint_16(mBotsCoord.size()) <= BOT_DOWN_LIMIT;
 }
 
 void 
@@ -345,7 +488,8 @@ Map::evolve()
 		}
 	}
 
-	getBotsCoordinates();
+	std::vector <Pair<sint_16>> temp = getObjectsCoordinates(Object::ObjectType::BOT);;
+	for (auto& i : temp) mBotsCoord.push(i);
 }
 
 void 
@@ -369,24 +513,26 @@ Map::regenerateField()
 	mWallCounter = WALL_START_COUNT;
 }
 
-void
-Map::getBotsCoordinates()
+std::vector<Pair<sint_16>>
+Map::getObjectsCoordinates(Object::ObjectType aType)
 {
-	while (!mBotsCoord.empty())
-	{
-		std::cout << "aueue error\n";
-		mBotsCoord.pop();
-	}
+	//while (!mBotsCoord.empty())
+	//{
+	//	std::cout << "aueue error\n";
+	//	mBotsCoord.pop();
+	//}
+	std::vector <Pair<sint_16>> res;
 	for (sint_16 i = 0; i < mField.size(); ++i)
 	{
 		for (sint_16 j = 0; j < mField[0].size(); ++j)
 		{
-			if (mField[i][j]->getType() == Object::ObjectType::BOT)
+			if (mField[i][j]->getType() == aType)
 			{
-				mBotsCoord.push({ i, j });
+				res.push_back({ i, j });
 			}
 		}
 	}
+	return res;
 }
 
 void 
