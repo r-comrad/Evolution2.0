@@ -66,8 +66,6 @@ Map::Map(sint_16 aN, sint_16 aM) :
 	regenerateField();
 	createObjects(BOTS_START_COUNT, Object::ObjectType::BOT);
 	reloadBotsCoordinates();
-	//mBotsCoord getObjectsCoordinates(Object::ObjectType::BOT);
-	//for (auto& i : temp) .push(i);
 }
 
 const std::vector<std::vector<Object*>>&
