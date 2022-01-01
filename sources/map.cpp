@@ -3,6 +3,8 @@
 //--------------------------------------------------------------------------------
 
 //#define PLANT_WORLD
+//#define LINE_PLANT_GROW_TYPE
+#define SCALE_PLANT_GROW_TYPE
 
 #define BOTS_START_COUNT		(64)
 #ifdef PLANT_WORLD
@@ -22,10 +24,13 @@
 #endif
 #define BOT_MULTIPLY_COUNT		7
 
-#define FOOD_SPAWN_RATE			1
+#define FOOD_SPAWN_RATE			2
 #define POISON_SPAWN_RATE		2
 
 #define PLANT_GROW_RANDOMNES	10
+#ifdef SCALE_PLANT_GROW_TYPE
+#define PLANT_GROW_SCALE		50
+#endif // SCALE_PLANT_GROW_TYPE
 
 Map::Map(sint_16 aN, sint_16 aM) :
 	mField				(aN + 2, std::vector<Object*>(aM + 2, NULL)),
@@ -162,10 +167,10 @@ Map::makeTurn()
 	}
 
 	sint_16 newPlantCount = 0;
-
-	newPlantCount = std::min(FOOD_SPAWN_RATE, 
+#ifdef LINE_PLANT_GROW_TYPE
+	newPlantCount = std::min(FOOD_SPAWN_RATE,
 		FOOD_START_COUNT - mFoodtCounter);
-	createNewPlant(Object::ObjectType::FOOD, 
+	createNewPlant(Object::ObjectType::FOOD,
 		mFoodSuitableCells, newPlantCount);
 	mFoodtCounter += newPlantCount;
 
@@ -174,6 +179,19 @@ Map::makeTurn()
 	createNewPlant(Object::ObjectType::POISON,
 		mPoisonSuitableCells, newPlantCount);
 	mPoisonCounter += newPlantCount;
+#endif // LINE_PLANT_GROW_TYPE
+
+#ifdef SCALE_PLANT_GROW_TYPE
+	newPlantCount = (FOOD_START_COUNT - mFoodtCounter) / PLANT_GROW_SCALE;
+	createNewPlant(Object::ObjectType::FOOD,
+		mFoodSuitableCells, newPlantCount);
+	mFoodtCounter += newPlantCount;
+
+	newPlantCount = (POISON_START_COUNT - mPoisonCounter) / PLANT_GROW_SCALE;
+	createNewPlant(Object::ObjectType::POISON,
+		mPoisonSuitableCells, newPlantCount);
+	mPoisonCounter += newPlantCount;
+#endif // SCALE_PLANT_GROW_TYPE
 }
 
 bool
@@ -348,9 +366,10 @@ Map::createNewPlant
 
 		Pair<sint_16> cur = aSuitableCells.front();
 		aSuitableCells.pop();
-		if (mField[cur.x][cur.y]->getType() == 
+		if (mField[cur.x][cur.y]->getType() ==
 			Object::ObjectType::VOID &&
-			checkNeighbours(aType, cur)) setNewObject(aType, cur);	
+			checkNeighbours(aType, cur)) setNewObject(aType, cur);
+		else --i;
 	}
 }
 
