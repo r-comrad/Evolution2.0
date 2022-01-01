@@ -86,4 +86,4 @@ union Pair
 	}
 };
 
-#endif //DOMAIN_H
+#endif // DOMAIN_H

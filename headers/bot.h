@@ -1,20 +1,17 @@
 #ifndef BOT_H
 #define BOT_H
 
-#include <vector>
+//--------------------------------------------------------------------------------
+
 #include <iostream>
+
 #include <set>
+#include <vector>
+#include <cstdlib>
 
 #include "domain.h"
 #include "object.h"
 #include "direction.h"
-
-#define BOT_PROGRAM_SIZE 65
-#define COMMAND_LIMIT 6
-
-#define START_HEALPH	90
-#define FOOD_VALUE		10
-#define POISON_VALUE	20
 
 class Bot : public Object
 {
@@ -32,32 +29,39 @@ public:
 	Bot();
 	Bot(const Bot& aOther);
 	virtual ~Bot();
+
+	sint_8 getHealph() const;
 	const Direction& getDirection() const;
+
 	void feed(float aValue);
 	void poison(float aValue);
-	Bot::Action makeAction(Object::ObjectType);
 	bool aging();
+
+	Bot::Action makeAction(Object::ObjectType aType);
 	void evolve(uint_8 aValue);
 	void reset();
-	sint_8 getHealph() const;
 
 private:
-	sint_8 mProgramPtr;
-	std::vector<sint_8> mProgram;
-	sint_8 mHealph;
-
-	Direction mDirection;
-	sint_8 generateComand();
 	enum Comands
 	{
-		BOT_GO = 11,
-		BOT_EAT = 12,
-		BOT_CONVERT = 13,
-		BOT_LOOK = 14, 
-		BOT_TURN_RIGHT = 15,
-		BOT_TURN_LEFT = 16,
+		BOT_GO			=	11,
+		BOT_EAT			=	12,
+		BOT_CONVERT		=	13,
+		BOT_LOOK		=	14,
+		BOT_TURN_RIGHT	=	15,
+		BOT_TURN_LEFT	=	16,
 	};
-	//void changeHealph(sint_8 aValue);
+
+	sint_8 mHealph;
+	Direction mDirection;
+
+	sint_8 mProgramPtr;
+	std::vector<sint_8> mProgram;
+
+	sint_8 generateComand() const;
+	void shiftProgramPtr(sint_16 aValue);
 };
 
-#endif //BOT_H
+//--------------------------------------------------------------------------------
+
+#endif // BOT_H

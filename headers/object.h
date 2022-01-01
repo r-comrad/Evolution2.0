@@ -1,7 +1,7 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 
-#include <vector>
+//--------------------------------------------------------------------------------
 
 class Object
 {
@@ -25,4 +25,6 @@ private:
 	ObjectType mType;
 };
 
-#endif //OBJECT_H
+//--------------------------------------------------------------------------------
+
+#endif // OBJECT_H

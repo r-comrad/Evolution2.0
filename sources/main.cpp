@@ -1,8 +1,4 @@
-#include "gui.h"
-#include "map.h"
-
-#include <iostream>
-
+#include "god.h"
 
 bool dirCheck()
 {
@@ -41,40 +37,6 @@ bool dirCheck()
 
 int main()
 {
-	//std::cout << dirCheck() << "\n";
-	//return 0;
-	Map map(32, 20);
-	GUI gui(1775, 940);
-	bool needToDraw = true;
-	bool turnOff = false;
-	//long long pauseTime = 1*7*7*7*7*7*7*7;
-	long long pauseTime = 1;
-	for (int cnt = 0, era = 0; !gui.isAppClosed(); ++cnt)
-	{
-		if (needToDraw) gui.drawField(map.getPresentation());
-		for (long long i = 0; i < pauseTime; ++i)
-		{
-			std::vector<GUI::EventType> events = gui.getEvents();
-			for (auto& i : events)
-			{
-				if (i == GUI::EventType::SWITCH_DRAW_MODE) needToDraw = !needToDraw;
-				else if (i == GUI::EventType::SWITCH_PAUSE) turnOff = !turnOff;
-				else if (i == GUI::EventType::INCREASE_PAUSE) pauseTime *= 7;
-				else if (i == GUI::EventType::DECREASE_PAUSE) pauseTime /= 7;
-				else if (i == GUI::EventType::ZERO_PAUSE) pauseTime = 1;
-			}
-
-			if (!needToDraw) break;
-		}
-		if (turnOff) continue;
-
-		map.makeTurn();
-		if (map.needToEvolve())
-		{
-			map.evolve();
-			std::cout << era << ": " << cnt << std::endl;
-			cnt = 0;
-			++era;
-		}
-	}
+	God g;
+	g.run();
 }

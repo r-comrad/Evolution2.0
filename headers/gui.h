@@ -1,7 +1,10 @@
 #ifndef GUI_H
 #define GUI_H
 
+//--------------------------------------------------------------------------------
+
 #include <iostream>
+
 #include <vector>
 #include <string>
 
@@ -11,41 +14,35 @@
 #include "bot.h"
 #include "domain.h"
 
-#define HEXAGON_DX 0.f
-#define HEXAGON_DY 50.f
-
-#define TEXT_DX -18.f
-#define TEXT_SINGLE_DX 10.f
-#define TEXT_DY -20.f
-
-#define HEXAGON_OTLINE_THICKNESS 5.f
-#define HEXAGON_SIZE 25.f
-
 class GUI
 {
 public:
 	enum EventType
 	{
-		NUN = 0,
-		SWITCH_DRAW_MODE = 1,
-		SWITCH_PAUSE = 2,
-		INCREASE_PAUSE = 3,
-		DECREASE_PAUSE = 4,
-		ZERO_PAUSE
+		NUN					=	0,
+		SWITCH_DRAW_MODE	=	1,
+		SWITCH_PAUSE		=	2,
+		INCREASE_SPEED		=	3,
+		DECREASE_SPEED		=	4,
+		STANDART_PAUSE		=	5
 	};
 
 	GUI(sint_16 aN, sint_16 aM);
-	void drawField(std::vector<std::vector<Object*>> aField);
-	bool isAppClosed();
+
+	bool isAppClosed() const;
 	std::vector<EventType> getEvents();
+
+	void drawField(const std::vector<std::vector<Object*>>& aField);
 
 private:
 	sf::RenderWindow mWindow;
 
+	sf::CircleShape mHexagon;
+
 	sf::Font mFont;
 	sf::Text mText;
-
-	sf::CircleShape mHexagon;
 };
 
-#endif //GUI_H
+//--------------------------------------------------------------------------------
+
+#endif // GUI_H
